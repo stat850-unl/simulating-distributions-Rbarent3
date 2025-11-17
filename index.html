@@ -230,7 +230,7 @@ Attaching package: 'dplyr'</code></pre>
 <span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>  error<span class="ot">=</span><span class="fu">c</span>(error,new)</span>
 <span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>}</span>
 <span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a><span class="fu">sum</span>(<span class="fu">abs</span>(<span class="fu">unlist</span>(error)))<span class="sc">/</span><span class="dv">100</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a><span class="fu">mean</span>(<span class="fu">abs</span>(<span class="fu">unlist</span>(error)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 0.00565</code></pre>
 </div>
@@ -247,10 +247,106 @@ Attaching package: 'dplyr'</code></pre>
 <p>In this problem, you will work with the gamma distribution with parameters <span class="math inline">\(\alpha, \beta\)</span> (note that R uses a different parameterization than Python) and PDF</p>
 <p><span class="math display">\[f(x | \alpha, \beta) = \frac{\beta^\alpha x^{\alpha-1} e^{-x}}{\Gamma(\alpha)}.\]</span></p>
 <ol type="1">
-<li><p>Write a function that will calculate the MLE <span class="math inline">\(\hat\alpha,\hat\beta\)</span> from a vector <span class="math inline">\(x_{samp}\)</span> of gamma-distributed samples. Your function should have required parameter <span class="math inline">\(x\)</span> and optional parameters <span class="math inline">\(\alpha,\beta\)</span> representing the true values. The function should return a list of <span class="math inline">\(\hat\alpha, \hat\beta\)</span> and, if <span class="math inline">\(\alpha,\beta\)</span> are provided, it should also return <span class="math inline">\(\alpha_{err} = \alpha-\hat\alpha\)</span> and <span class="math inline">\(\beta_{err} = \beta-\hat\beta\)</span>.</p></li>
-<li><p>For a grid of <span class="math inline">\(\alpha \times \beta=\{0.25, 0.50, 1.00, 2.00, 4.00\}\times\{0.25, 0.50, 1.00, 2.00, 4.00\}\)</span>, sample 100 values from the <span class="math inline">\(\text{gamma}(\alpha,\beta)\)</span> distribution. Provide the true parameter values and plot your error values in an appropriate plot. Take care to choose your plot mappings to support your discussion of the following: What trends (if any) do you notice in the estimation error?</p></li>
-<li><p>Now, let’s vary the sample size. For <span class="math inline">\(n=\{20, 30, 50, 100\}\)</span>, use your function to evaluate the error for <span class="math inline">\(\alpha=1, \beta=2\)</span>. How does the error change as <span class="math inline">\(n\)</span> increases? Provide an appropriate plot as well as a description of the changes for increasing <span class="math inline">\(n\)</span>.</p></li>
+<li>Write a function that will calculate the MLE <span class="math inline">\(\hat\alpha,\hat\beta\)</span> from a vector <span class="math inline">\(x_{samp}\)</span> of gamma-distributed samples. Your function should have required parameter <span class="math inline">\(x\)</span> and optional parameters <span class="math inline">\(\alpha,\beta\)</span> representing the true values. The function should return a list of <span class="math inline">\(\hat\alpha, \hat\beta\)</span> and, if <span class="math inline">\(\alpha,\beta\)</span> are provided, it should also return <span class="math inline">\(\alpha_{err} = \alpha-\hat\alpha\)</span> and <span class="math inline">\(\beta_{err} = \beta-\hat\beta\)</span>.</li>
 </ol>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(MASS)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'MASS'</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following object is masked from 'package:dplyr':
+
+    select</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">1032002</span>)</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>x <span class="ot">=</span> <span class="fu">rgamma</span>(<span class="dv">100</span>, <span class="dv">2</span>, <span class="dv">3</span>)</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>gamma_est <span class="ot">=</span> <span class="cf">function</span>(x,a,b){</span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>mle <span class="ot">=</span> <span class="fu">fitdistr</span>(x, <span class="st">"gamma"</span>, <span class="at">start=</span><span class="fu">list</span>(<span class="at">shape=</span>a, <span class="at">rate=</span>b), <span class="at">lower =</span> <span class="fl">0.001</span>)</span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>shape <span class="ot">=</span> mle<span class="sc">$</span>estimate[[<span class="dv">1</span>]]</span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>rate <span class="ot">=</span> mle<span class="sc">$</span>estimate[[<span class="dv">2</span>]]</span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>shape_err <span class="ot">=</span> a <span class="sc">-</span> shape</span>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a>rate_err <span class="ot">=</span> b <span class="sc">-</span> rate</span>
+<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a><span class="fu">return</span>(<span class="fu">data.frame</span>(a,b,shape,rate,shape_err,rate_err,<span class="at">n=</span><span class="fu">length</span>(x)))</span>
+<span id="cb19-15"><a href="#cb19-15" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb19-16"><a href="#cb19-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-17"><a href="#cb19-17" aria-hidden="true" tabindex="-1"></a><span class="fu">gamma_est</span>(x,<span class="dv">2</span>,<span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>  a b    shape     rate   shape_err    rate_err   n
+1 2 3 2.098974 3.067613 -0.09897394 -0.06761261 100</code></pre>
+</div>
+</div>
+<ol start="2" type="1">
+<li>For a grid of <span class="math inline">\(\alpha \times \beta=\{0.25, 0.50, 1.00, 2.00, 4.00\}\times\{0.25, 0.50, 1.00, 2.00, 4.00\}\)</span>, sample 100 values from the <span class="math inline">\(\text{gamma}(\alpha,\beta)\)</span> distribution. Provide the true parameter values and plot your error values in an appropriate plot. Take care to choose your plot mappings to support your discussion of the following: What trends (if any) do you notice in the estimation error?</li>
+</ol>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(purrr)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: package 'purrr' was built under R version 4.3.3</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>grid <span class="ot">=</span> <span class="fu">expand.grid</span>(<span class="at">a=</span><span class="fu">c</span>(<span class="fl">0.25</span>,<span class="fl">0.5</span>,<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">4</span>),<span class="at">b=</span><span class="fu">c</span>(<span class="fl">0.25</span>,.<span class="dv">5</span>,<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">4</span>))</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>grid<span class="sc">$</span>x <span class="ot">=</span> <span class="fu">pmap</span>(<span class="fu">list</span>(<span class="at">a =</span> grid<span class="sc">$</span>a, <span class="at">b =</span> grid<span class="sc">$</span>b), <span class="sc">~</span> <span class="fu">rgamma</span>(<span class="dv">100</span>, <span class="at">shape =</span> ..<span class="dv">1</span>, <span class="at">rate =</span> ..<span class="dv">2</span>))</span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>est <span class="ot">=</span> <span class="fu">pmap_dfr</span>(grid, gamma_est)</span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(est,<span class="fu">aes</span>(<span class="at">x=</span>a,<span class="at">y=</span>shape_err)) <span class="sc">+</span> <span class="fu">geom_point</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(est,<span class="fu">aes</span>(<span class="at">x=</span>b,<span class="at">y=</span>rate_err)) <span class="sc">+</span> <span class="fu">geom_point</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/unnamed-chunk-6-2.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>As we increase the shape and rate parameters the error increases for their estimates. These estimates appear unbiased, as they are centered around 0</p>
+<ol start="3" type="1">
+<li>Now, let’s vary the sample size. For <span class="math inline">\(n=\{20, 30, 50, 100\}\)</span>, use your function to evaluate the error for <span class="math inline">\(\alpha=1, \beta=2\)</span>. How does the error change as <span class="math inline">\(n\)</span> increases? Provide an appropriate plot as well as a description of the changes for increasing <span class="math inline">\(n\)</span>.</li>
+</ol>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">1032002</span>)</span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>n <span class="ot">=</span> <span class="fu">c</span>(<span class="dv">20</span>,<span class="dv">30</span>,<span class="dv">50</span>,<span class="dv">100</span>)</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>grid2 <span class="ot">=</span> <span class="fu">data.frame</span>(<span class="at">a =</span> <span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">1</span>,<span class="dv">1</span>,<span class="dv">1</span>),<span class="at">b =</span> <span class="fu">c</span>(<span class="dv">2</span>,<span class="dv">2</span>,<span class="dv">2</span>,<span class="dv">2</span>))</span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>grid2<span class="sc">$</span>x <span class="ot">=</span> <span class="fu">lapply</span>(n,<span class="cf">function</span>(s) <span class="fu">rgamma</span>(s, <span class="at">shape =</span> <span class="dv">1</span>, <span class="at">rate =</span> <span class="dv">2</span>))</span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a>est2 <span class="ot">=</span> <span class="fu">pmap_dfr</span>(grid2, gamma_est)</span>
+<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(est2,<span class="fu">aes</span>(<span class="at">x=</span>n,<span class="at">y=</span>shape_err)) <span class="sc">+</span> <span class="fu">geom_point</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(est2,<span class="fu">aes</span>(<span class="at">x=</span>n,<span class="at">y=</span>rate_err)) <span class="sc">+</span> <span class="fu">geom_point</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/unnamed-chunk-7-2.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>As sample size increases, the error for our estimates of shape/rate decrease</p>
 </section>
 </section>
 

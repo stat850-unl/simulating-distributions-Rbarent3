@@ -80,7 +80,7 @@ for (i in 1:100){
   error=c(error,new)
 }
 
-sum(abs(unlist(error)))/100
+mean(abs(unlist(error)))
 ```
 
 
@@ -100,13 +100,66 @@ $$f(x | \alpha, \beta) = \frac{\beta^\alpha x^{\alpha-1} e^{-x}}{\Gamma(\alpha)}
 
 1. Write a function that will calculate the MLE $\hat\alpha,\hat\beta$ from a vector $x_{samp}$ of gamma-distributed samples. Your function should have required parameter $x$ and optional parameters $\alpha,\beta$ representing the true values. The function should return a list of $\hat\alpha, \hat\beta$ and, if $\alpha,\beta$ are provided, it should also return $\alpha_{err} = \alpha-\hat\alpha$ and $\beta_{err} = \beta-\hat\beta$. 
 
+```{r}
 
+library(MASS)
+set.seed(1032002)
+
+x = rgamma(100, 2, 3)
+
+gamma_est = function(x,a,b){
+  
+mle = fitdistr(x, "gamma", start=list(shape=a, rate=b), lower = 0.001)
+
+shape = mle$estimate[[1]]
+rate = mle$estimate[[2]]
+shape_err = a - shape
+rate_err = b - rate
+
+return(data.frame(a,b,shape,rate,shape_err,rate_err,n=length(x)))
+}
+
+gamma_est(x,2,3)
+
+```
 
 
 2. For a grid of $\alpha \times \beta=\{0.25, 0.50, 1.00, 2.00, 4.00\}\times\{0.25, 0.50, 1.00, 2.00, 4.00\}$, sample 100 values from the $\text{gamma}(\alpha,\beta)$ distribution. Provide the true parameter values and plot your error values in an appropriate plot. Take care to choose your plot mappings to support your discussion of the following: What trends (if any) do you notice in the estimation error?
 
+```{r}
+library(purrr)
+
+grid = expand.grid(a=c(0.25,0.5,1,2,4),b=c(0.25,.5,1,2,4))
+
+grid$x = pmap(list(a = grid$a, b = grid$b), ~ rgamma(100, shape = ..1, rate = ..2))
+
+
+est = pmap_dfr(grid, gamma_est)
+
+ggplot(est,aes(x=a,y=shape_err)) + geom_point()
+ggplot(est,aes(x=b,y=rate_err)) + geom_point()
+```
+
+As we increase the shape and rate parameters the error increases for their estimates. These estimates appear unbiased, as they are centered around 0 
+
 
 3. Now, let's vary the sample size. For $n=\{20, 30, 50, 100\}$, use your function to evaluate the error for $\alpha=1, \beta=2$. How does the error change as $n$ increases? Provide an appropriate plot as well as a description of the changes for increasing $n$. 
 
+```{r}
+set.seed(1032002)
+n = c(20,30,50,100)
+
+
+grid2 = data.frame(a = c(1,1,1,1),b = c(2,2,2,2))
+grid2$x = lapply(n,function(s) rgamma(s, shape = 1, rate = 2))
+
+
+est2 = pmap_dfr(grid2, gamma_est)
+
+ggplot(est2,aes(x=n,y=shape_err)) + geom_point()
+ggplot(est2,aes(x=n,y=rate_err)) + geom_point()
+
+```
+As sample size increases, the error for our estimates of shape/rate decrease
 
 
